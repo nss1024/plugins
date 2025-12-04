@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="dnsjava-3.6.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/dnsjava-3.6.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/logback-classic-1.2.13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/logback-core-1.2.13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/slf4j-api-1.7.36.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/smtpSecurityApi.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="smtpSecurityApi">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../smtpSecurityApi/smtpSecurityApi.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
