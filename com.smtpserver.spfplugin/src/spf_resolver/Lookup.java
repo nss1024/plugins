@@ -20,7 +20,7 @@ public class Lookup {
         lookupThreadPool= Executors.newFixedThreadPool(numberOfthreads);
     }
 
-    public Future<SpfReult> lookupSpfRecord(String domainName){
+    public Future<SpfResult> lookupSpfRecord(String domainName){
         if(lookupThreadPool!=null){
             return lookupThreadPool.submit(new SpfResolver(domainName));
         }

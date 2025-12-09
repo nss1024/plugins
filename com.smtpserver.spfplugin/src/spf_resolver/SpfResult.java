@@ -1,6 +1,6 @@
 package spf_resolver;
 
-public enum SpfReult {
+public enum SpfResult {
 
     PASS, // Sender authorised.
     FAIL, // Sender not authorised -> fail
