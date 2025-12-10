@@ -109,9 +109,9 @@ public class SpfResolver implements Callable<SpfResult> {
         List<SpfMechanism> result = new ArrayList<>();
         String[] splitSpf = spfTxt.split(" ");
         for(String s:splitSpf){
-            if(s.startsWith("includes")){
+            if(s.contains("includes")){
                 result.add(
-                        new SpfMechanism(SpfMechanism.Qualifier.PASS,SpfMechanism.Type.INCLUDE,s.substring(result.indexOf(":")+1),null)
+                        //new SpfMechanism(SpfMechanism.Qualifier.PASS,SpfMechanism.Type.INCLUDE,s.substring(result.indexOf(":")+1),null)
                 );
             }
         }

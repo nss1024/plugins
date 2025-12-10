@@ -1,7 +1,13 @@
+import spf_resolver.SpfQualifier;
+import spf_resolver.SpfType;
+
 import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SpfUtils {
 
@@ -111,5 +117,40 @@ public class SpfUtils {
         byte[] bytes =addr.getAddress();
         return (bytes[12]&0xFF)+"."+(bytes[13]&0xFF)+"."+(bytes[14]&0xFF)+"."+(bytes[15]&0xFF);
     }
+
+    private static SpfQualifier getQualifierFromString(String s){
+        if (s == null || s.isEmpty()) return SpfQualifier.PASS;
+
+        char c = s.charAt(0);
+
+        switch (c) {
+            case '+': return SpfQualifier.PASS;
+            case '-': return SpfQualifier.FAIL;
+            case '~': return SpfQualifier.SOFTFAIL;
+            case '?': return SpfQualifier.NEUTRAL;
+            default:  return SpfQualifier.PASS;
+        }
+    }
+
+    private static SpfType getSpftypeFromString(String s){
+        if (s == null || s.isEmpty()) return null;
+        final Set<Character> QUALIFIERS =new HashSet<>(Arrays.asList('+', '-', '~', '?'));
+        if (QUALIFIERS.contains(s.charAt(0))) {
+            s = s.substring(1);
+        }
+        String spfType=s.substring(0,s.indexOf(":")).toLowerCase();
+        switch (spfType) {
+            case "include": return SpfType.INCLUDE;
+            case "mx": return SpfType.MX;
+            case "a": return SpfType.A;
+            case "ip4": return SpfType.IP4;
+            case "ip6": return SpfType.IP6;
+            case "all": return SpfType.ALL;
+            case "exists": return SpfType.EXISTS;
+            case "ptr": return SpfType.PTR;
+            default:  return SpfType.ALL;
+        }
+    }
+
 
 }
