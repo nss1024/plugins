@@ -14,8 +14,8 @@ public class SpfMechanism {
         this.prefix = prefix;
     }
 
-    public char getQualifier() {
-        return qualifier.getSymbol();
+    public SpfQualifier getQualifier() {
+        return qualifier;
     }
 
     public SpfType getType() {
@@ -28,5 +28,15 @@ public class SpfMechanism {
 
     public Integer getPrefix() {
         return prefix;
+    }
+
+    @Override
+    public String toString() {
+        return "SpfMechanism{" +
+                "qualifier=" + qualifier +
+                ", type=" + type +
+                ", domain='" + domain + '\'' +
+                ", prefix=" + prefix +
+                '}';
     }
 }

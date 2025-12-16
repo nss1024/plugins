@@ -1,5 +1,4 @@
-import spf_resolver.SpfQualifier;
-import spf_resolver.SpfType;
+package spf_resolver;
 
 import java.math.BigInteger;
 import java.net.Inet6Address;
@@ -12,6 +11,8 @@ import java.util.Set;
 public class SpfUtils {
 
         private SpfUtils(){}
+
+    private static final Set<Character> QUALIFIERS = new HashSet<>(Arrays.asList('+','-','~','?'));
 
     private static int ipToInt(String ip){
         int result = 0;
@@ -39,6 +40,13 @@ public class SpfUtils {
         return (hostIp&mask)==(spfIp&mask);
     }
 
+    public static boolean matchesCidr(String hostAddress, String spfAddress, int prefix){
+        int hostIp = ipToInt(hostAddress);
+        int spfIp = ipToInt(spfAddress);
+        int mask = prefixToMask(prefix);
+        return (hostIp&mask)==(spfIp&mask);
+    }
+
     public static boolean matchesIpv6Cidr(String hostIp, String spfIpRange){
         InetAddress hostAddress, spfAddress = null;
         String[] parts = spfIpRange.split("/");
@@ -46,6 +54,22 @@ public class SpfUtils {
         try {
             hostAddress = InetAddress.getByName(hostIp);
             spfAddress = InetAddress.getByName(parts[0]);
+
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        BigInteger hostIpNo = ip6ToBigint(hostAddress);
+        BigInteger spfAddressNo = ip6ToBigint(spfAddress);
+        BigInteger prefix = prefixToBigInt(spfPrefix);
+
+        return hostIpNo.and(prefix).equals(spfAddressNo.and(prefix));
+    }
+
+    public static boolean matchesIpv6Cidr(String hostIp, String spfIpAddress, String spfPrefix){
+        InetAddress hostAddress, spfAddress = null;
+        try {
+            hostAddress = InetAddress.getByName(hostIp);
+            spfAddress = InetAddress.getByName(spfIpAddress);
 
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -132,7 +156,7 @@ public class SpfUtils {
         }
     }
 
-    private static SpfType getSpftypeFromString(String s){
+    private static SpfType getSpfTypeFromString(String s){
         if (s == null || s.isEmpty()) return null;
         final Set<Character> QUALIFIERS =new HashSet<>(Arrays.asList('+', '-', '~', '?'));
         if (QUALIFIERS.contains(s.charAt(0))) {
@@ -151,6 +175,44 @@ public class SpfUtils {
             default:  return SpfType.ALL;
         }
     }
+
+    private static boolean hasSpfQualifier(String s){
+        return QUALIFIERS.contains(s.charAt(0));
+    }
+
+    public static SpfMechanism getSpfMechanismFromString(String s){
+        try {
+            SpfQualifier qualifier = hasSpfQualifier(s) ? SpfQualifier.PASS : getQualifierFromString(s);
+            SpfType type = getSpfTypeFromString(s);
+            Integer prefix = null;
+            String domain = null;
+            if (s.contains("/")) {
+                prefix = Integer.valueOf(s.split("/")[1]);
+                domain = s.substring(s.indexOf(":"), s.indexOf("/"));
+            } else {
+                domain = s.substring(s.indexOf(":"));
+            }
+            return new SpfMechanism(qualifier,type,domain,prefix);
+        }catch (Exception e){
+            return null;
+        }
+
+    }
+
+    public static SpfResult getResultFromQualifier(SpfQualifier q){
+        if (q == null) return SpfResult.PASS;
+
+        switch (q) {
+            case PASS: return SpfResult.PASS;
+            case FAIL: return SpfResult.FAIL;
+            case SOFTFAIL: return SpfResult.SOFTFAIL;
+            case NEUTRAL: return SpfResult.NEUTRAL;
+            default:  return SpfResult.PASS;
+        }
+    }
+
+
+
 
 
 }
