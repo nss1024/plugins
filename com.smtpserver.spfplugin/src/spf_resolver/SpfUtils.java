@@ -1,9 +1,12 @@
 package spf_resolver;
 
+import sun.security.jgss.GSSUtil;
+
 import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.SQLOutput;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -157,12 +160,15 @@ public class SpfUtils {
     }
 
     private static SpfType getSpfTypeFromString(String s){
+        String spfType="";
         if (s == null || s.isEmpty()) return null;
         final Set<Character> QUALIFIERS =new HashSet<>(Arrays.asList('+', '-', '~', '?'));
         if (QUALIFIERS.contains(s.charAt(0))) {
             s = s.substring(1);
         }
-        String spfType=s.substring(0,s.indexOf(":")).toLowerCase();
+        if(s.contains(":")){
+        spfType=s.substring(0,s.indexOf(":")).toLowerCase();
+        }else{spfType=s;}
         switch (spfType) {
             case "include": return SpfType.INCLUDE;
             case "mx": return SpfType.MX;
@@ -182,18 +188,22 @@ public class SpfUtils {
 
     public static SpfMechanism getSpfMechanismFromString(String s){
         try {
-            SpfQualifier qualifier = hasSpfQualifier(s) ? SpfQualifier.PASS : getQualifierFromString(s);
+            SpfQualifier qualifier = hasSpfQualifier(s) ? getQualifierFromString(s):SpfQualifier.PASS;
             SpfType type = getSpfTypeFromString(s);
+            if(type.equals(SpfType.ALL)){
+                return new SpfMechanism(qualifier,type,null,null);
+            }
             Integer prefix = null;
             String domain = null;
             if (s.contains("/")) {
                 prefix = Integer.valueOf(s.split("/")[1]);
-                domain = s.substring(s.indexOf(":"), s.indexOf("/"));
+                domain = s.substring(s.indexOf(":")+1, s.indexOf("/"));
             } else {
-                domain = s.substring(s.indexOf(":"));
+                domain = s.substring(s.indexOf(":")+1);
             }
             return new SpfMechanism(qualifier,type,domain,prefix);
         }catch (Exception e){
+            System.out.println(e);
             return null;
         }
 

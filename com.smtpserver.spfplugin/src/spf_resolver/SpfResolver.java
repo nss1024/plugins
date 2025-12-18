@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Lookup;
 
+
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -16,7 +17,7 @@ public class SpfResolver implements Callable<SpfResult> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private int lookupCounter = 0;// count number of dns lookups performed
     private Set<SpfMechanism> visited = new HashSet<>();//domains and IPs already checked
-    private Stack<SpfMechanism> spfStach = new Stack<>();
+    private Stack<SpfMechanism> spfStack = new Stack<>();
 
     public SpfResolver(String domainName){
         this.domanName=domainName;
@@ -26,16 +27,20 @@ public class SpfResolver implements Callable<SpfResult> {
     @Override
     public SpfResult call() throws Exception {
         List<SpfMechanism> spfMechanism=null;
+        String testSenderIp="86.111.216.2";
         String spfRecord = getSpfRecords(domanName);
         if(spfRecord!=null) {
             spfMechanism = getMechanisms(spfRecord);
         }
         System.out.println("Spf record: "+spfRecord);
         System.out.println("IP list from DNS lookup: "+Arrays.toString(getDnsRecords("b.spf.service-now.com",Type.A).toArray()));
-        System.out.println(Arrays.toString(getMxRecords("nasstar.com").toArray()));
+        System.out.println("Mx records: "+Arrays.toString(getMxRecords("nasstar.com").toArray()));
         for(SpfMechanism sm:spfMechanism){
             System.out.println(sm.toString());
         }
+        System.out.println("-----------**--------------------");
+        System.out.println(processSpfRecords(spfMechanism,spfStack,testSenderIp));
+
 
         return null;
     }
@@ -116,30 +121,34 @@ public class SpfResolver implements Callable<SpfResult> {
         for(int i=1;i<splitSpf.length;i++){
             result.add(SpfUtils.getSpfMechanismFromString(splitSpf[i]));
         }
+
         return result;
     }
 
     private SpfResult processSpfRecords(List<SpfMechanism> spfMechanisms,Stack<SpfMechanism> spfStack, String senderIp){
         SpfMechanism tmp = null;
         int length = spfMechanisms.size();
-        for(int i=length-1;i>0;i--){
-            spfStack.add(spfMechanisms.get(i));
-        }
+        Collections.reverse(spfMechanisms);
+        spfStack.addAll(spfMechanisms);
         if(!spfStack.isEmpty()) {
-            while ((!spfStack.isEmpty()) && lookupCounter == 10) {
+            while (!spfStack.isEmpty() && lookupCounter <= 10) {
                 tmp=spfStack.pop();
                 switch(tmp.getType()){
                     case IP4:
                         if (tmp.getPrefix() == null) {
+
                             if(SpfUtils.isIp4Match(senderIp,tmp.getDomain())){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                         }else{
+
                             if(SpfUtils.matchesCidr(senderIp,tmp.getDomain(),tmp.getPrefix())){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                         }
                         break;
                     case IP6:
                         if (tmp.getPrefix() == null) {
+
                             if(SpfUtils.isIp6Match(senderIp,tmp.getDomain())){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                         }else{
+
                             if(SpfUtils.matchesIpv6Cidr(senderIp,tmp.getDomain(),tmp.getPrefix().toString())){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                         }
                         break;
@@ -170,12 +179,33 @@ public class SpfResolver implements Callable<SpfResult> {
                         lookupCounter++;
                         String records = getSpfRecords(tmp.getDomain());
                         if(records!=null) {
-                            List<SpfMechanism> spfMechanism = getMechanisms(records);
-                            Collections.reverse(spfMechanism);
-                            spfStack.addAll(spfMechanisms);
+                            List<SpfMechanism> newMechanismList = getMechanisms(records);
+                            Collections.reverse(newMechanismList);
+                            spfStack.addAll(newMechanismList);
+                        }
+                        break;
+                    case MX:
+                        if(lookupCounter>=10){
+                            return SpfResult.PERMERROR;
+                        }
+                        lookupCounter++;
+                        List<String> mxRecords = getMxRecords(domanName);
+                        if(mxRecords!=null){
+                            Collections.reverse(mxRecords);
+                            for(String s:mxRecords){
+                                spfStack.add(
+                                        new SpfMechanism(
+                                                tmp.getQualifier(),
+                                                SpfType.A,
+                                                s,
+                                                null
+                                        )
+                                );
+                            }
                         }
                         break;
                 }
+
             }
         }
         return null;
