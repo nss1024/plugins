@@ -204,6 +204,13 @@ public class SpfResolver implements Callable<SpfResult> {
                             }
                         }
                         break;
+                    case ALL:
+                        if(tmp.getQualifier()==SpfQualifier.PASS){
+                            return SpfResult.PASS;
+                        }else if (spfStack.isEmpty()){
+                            return SpfUtils.getResultFromQualifier(tmp.getQualifier());
+                        }
+                        break;
                 }
 
             }
