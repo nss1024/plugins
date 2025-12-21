@@ -127,6 +127,7 @@ public class SpfResolver implements Callable<SpfResult> {
 
     private SpfResult processSpfRecords(List<SpfMechanism> spfMechanisms,Stack<SpfMechanism> spfStack, String senderIp){
         SpfMechanism tmp = null;
+        List<String>ipList=null;
         int length = spfMechanisms.size();
         Collections.reverse(spfMechanisms);
         spfStack.addAll(spfMechanisms);
@@ -157,7 +158,7 @@ public class SpfResolver implements Callable<SpfResult> {
                             return SpfResult.PERMERROR;
                         }
                         lookupCounter++;
-                        List<String>ipList = getDnsRecords(tmp.getDomain(),Type.A);
+                        ipList = getDnsRecords(tmp.getDomain(),Type.A);
                         if(ipList!=null){
                             Collections.reverse(ipList);
                             for(String ip:ipList){
@@ -210,6 +211,20 @@ public class SpfResolver implements Callable<SpfResult> {
                         }else if (spfStack.isEmpty()){
                             return SpfUtils.getResultFromQualifier(tmp.getQualifier());
                         }
+                        break;
+
+                    case EXISTS:
+                        if(lookupCounter>=10){
+                            return SpfResult.PERMERROR;
+                        }
+                        lookupCounter++;
+                        ipList = getDnsRecords(tmp.getDomain(),Type.A);
+                        if(ipList==null){break;}
+                        else{
+                            return SpfUtils.getResultFromQualifier(tmp.getQualifier());
+                        }
+                    case PTR:
+                        
                         break;
                 }
 
