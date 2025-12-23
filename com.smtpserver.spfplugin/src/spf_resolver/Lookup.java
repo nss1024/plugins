@@ -22,7 +22,7 @@ public class Lookup {
 
     public Future<SpfResult> lookupSpfRecord(String domainName){
         if(lookupThreadPool!=null){
-            return lookupThreadPool.submit(new SpfResolver(domainName));
+            return lookupThreadPool.submit(new SpfResolver(domainName,5));
         }
         return null;
     }

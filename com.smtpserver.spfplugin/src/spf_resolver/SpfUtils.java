@@ -221,6 +221,18 @@ public class SpfUtils {
         }
     }
 
+    public String reverseIP4ToPtrAddress(String address){
+        if(address==null){return null;}
+        String addr[] = address.split("\\.");
+        for (String part : addr) {
+            int octet = Integer.parseInt(part);
+            if (octet < 0 || octet > 255) return null;
+        }
+        if(addr.length==4){
+        return  addr[3]+"."+addr[2]+"."+addr[1]+"."+addr[0];
+        }else{return null;}
+    }
+
 
 
 

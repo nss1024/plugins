@@ -6,6 +6,10 @@ import org.xbill.DNS.*;
 import org.xbill.DNS.Lookup;
 
 
+import java.net.UnknownHostException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -18,38 +22,46 @@ public class SpfResolver implements Callable<SpfResult> {
     private int lookupCounter = 0;// count number of dns lookups performed
     private Set<SpfMechanism> visited = new HashSet<>();//domains and IPs already checked
     private Stack<SpfMechanism> spfStack = new Stack<>();
+    private int timeout = 5;
 
-    public SpfResolver(String domainName){
+
+    public SpfResolver(String domainName, int lookupTimeout){
         this.domanName=domainName;
+        this.timeout=lookupTimeout;
 
     }
 
     @Override
     public SpfResult call() throws Exception {
-        List<SpfMechanism> spfMechanism=null;
-        String testSenderIp="86.111.216.2";
-        String spfRecord = getSpfRecords(domanName);
-        if(spfRecord!=null) {
-            spfMechanism = getMechanisms(spfRecord);
-        }
-        System.out.println("Spf record: "+spfRecord);
-        System.out.println("IP list from DNS lookup: "+Arrays.toString(getDnsRecords("b.spf.service-now.com",Type.A).toArray()));
-        System.out.println("Mx records: "+Arrays.toString(getMxRecords("nasstar.com").toArray()));
-        for(SpfMechanism sm:spfMechanism){
-            System.out.println(sm.toString());
-        }
-        System.out.println("-----------**--------------------");
-        System.out.println(processSpfRecords(spfMechanism,spfStack,testSenderIp));
 
+        //List<SpfMechanism> spfMechanism=null;
+        //String testSenderIp="86.111.216.2";
+        //String spfRecord = getSpfRecords(domanName);
+        //if(spfRecord!=null) {
+        //    spfMechanism = getMechanisms(spfRecord);
+        //}
+        //System.out.println("Spf record: "+spfRecord);
+        //System.out.println("IP list from DNS lookup: "+Arrays.toString(getDnsRecords("b.spf.service-now.com",Type.A).toArray()));
+        //System.out.println("Mx records: "+Arrays.toString(getMxRecords("nasstar.com").toArray()));
+        //for(SpfMechanism sm:spfMechanism){
+        //    System.out.println(sm.toString());
+        //}
+        //System.out.println("-----------**--------------------");
+        //System.out.println(processSpfRecords(spfMechanism,spfStack,testSenderIp));
+
+        System.out.println(Arrays.toString(getPtrRecords("8.8.8.8.in-addr.arpa.").toArray()));
 
         return null;
     }
     //get SPF records for a domain
     private String getSpfRecords(String domainName){
         try {
-            lookup = new org.xbill.DNS.Lookup(domainName, Type.TXT);
-        } catch (TextParseException e) {
+            SimpleResolver resolver = new SimpleResolver();
+            resolver.setTimeout(Duration.of(timeout, ChronoUnit.SECONDS));
+            lookup = new Lookup(domainName, Type.TXT);
+        } catch (TextParseException | UnknownHostException e) {
             logger.warn("Could not look up mx record!");
+            return null;
         }
         Record[] records = lookup.run();
         if(records != null) {
@@ -73,10 +85,14 @@ public class SpfResolver implements Callable<SpfResult> {
 
         if (!domainName.isEmpty()) {
             try {
+                SimpleResolver resolver = new SimpleResolver();
+                resolver.setTimeout(Duration.of(timeout, ChronoUnit.SECONDS));
                 lookup = new Lookup(domainName,t);
+                lookup.setResolver(resolver);
 
-            } catch (TextParseException e) {
+            } catch (TextParseException | UnknownHostException e) {
                 logger.warn("Could not look up domain for : {} !",domainName);
+                return null;
             }
 
             Record[] aRecords = lookup.run();
@@ -93,12 +109,42 @@ public class SpfResolver implements Callable<SpfResult> {
         return null;
     }
 
+    private List<String> getPtrRecords(String reverseAddr){
+        if (!reverseAddr.isEmpty()) {
+            try{
+                SimpleResolver resolver = new SimpleResolver();
+                resolver.setTimeout(Duration.of(timeout, ChronoUnit.SECONDS));
+                lookup = new Lookup(reverseAddr, Type.PTR);
+                lookup.setResolver(resolver);
+            } catch (TextParseException | UnknownHostException e) {
+                logger.warn("Could not look up PTR record");
+                return null;
+            }
+        }
+
+        Record[] records = lookup.run();
+        if(records != null) {
+            List<String> recordslist=new ArrayList<>();
+            for (Record r : records) {
+                PTRRecord ptr = (PTRRecord) r;
+                String host = ptr.getTarget().toString(true);
+                recordslist.add(host);
+            }
+            return recordslist;
+        }
+        return null;
+    }
+
     private List<String> getMxRecords(String domainName){
 
         try {
+            SimpleResolver resolver = new SimpleResolver();
+            resolver.setTimeout(Duration.of(timeout, ChronoUnit.SECONDS));
             lookup = new Lookup(domainName, Type.MX);
-        } catch (TextParseException e) {
+            lookup.setResolver(resolver);
+        } catch (TextParseException | UnknownHostException e) {
             logger.warn("Could not look up mx record!");
+            return null;
         }
         Record[] records = lookup.run();
 
@@ -223,8 +269,13 @@ public class SpfResolver implements Callable<SpfResult> {
                         else{
                             return SpfUtils.getResultFromQualifier(tmp.getQualifier());
                         }
-                    case PTR:
-                        
+                    case PTR://Implementation, will match if sender IP has at least 1 PTR record & PTR hostname resolves back to sender IP, either match or continue
+                        if(lookupCounter>=10){
+                            return SpfResult.PERMERROR;
+                        }
+                        lookupCounter++;
+
+
                         break;
                 }
 
