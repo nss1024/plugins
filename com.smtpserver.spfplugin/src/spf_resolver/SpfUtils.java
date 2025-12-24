@@ -229,11 +229,34 @@ public class SpfUtils {
             if (octet < 0 || octet > 255) return null;
         }
         if(addr.length==4){
-        return  addr[3]+"."+addr[2]+"."+addr[1]+"."+addr[0];
-        }else{return null;}
+        return  addr[3]+"."+addr[2]+"."+addr[1]+"."+addr[0]+".in-addr.arpa.";
+        }else{
+            return null;
+        }
     }
 
+    public static String reverseIP6ToPtrAddress(String address){
+        InetAddress addr = null;
+        try {
+            addr = InetAddress.getByName(address);
+        } catch (UnknownHostException e) {
+            return null;
+        }
+        byte[] bytes = addr.getAddress(); // 16 bytes
 
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = bytes.length - 1; i >= 0; i--) {
+            int b = bytes[i] & 0xff;
+            sb.append(Integer.toHexString(b & 0x0f));
+            sb.append('.');
+            sb.append(Integer.toHexString((b >> 4) & 0x0f));
+            sb.append('.');
+        }
+
+        sb.append("ip6.arpa.");
+        return sb.toString();
+    }
 
 
 
