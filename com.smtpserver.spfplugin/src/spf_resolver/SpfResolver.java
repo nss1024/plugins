@@ -81,6 +81,7 @@ public class SpfResolver implements Callable<SpfResult> {
     }
 
     //get all IP addresses for a given domain name, used to look up "a:" mechanism
+    //A = 1; AAAA=28
     private List<String> getDnsRecords(String domainName, int t) {
 
         if (!domainName.isEmpty()) {
@@ -274,8 +275,27 @@ public class SpfResolver implements Callable<SpfResult> {
                             return SpfResult.PERMERROR;
                         }
                         lookupCounter++;
+                        String ptrAddr = SpfUtils.isIPv6(senderIp)?SpfUtils.reverseIP6ToPtrAddress(senderIp):SpfUtils.reverseIP4ToPtrAddress(senderIp);
+                        List<String> ptrLookupResult = null;
+                        if(ptrAddr!=null) {
+                            ptrLookupResult = getPtrRecords(ptrAddr);
+                        }
+                        if(ptrLookupResult!=null){
+                            for(String s:ptrLookupResult){
+                                int type=SpfUtils.isIPv6(senderIp)?28:1;
+                              List<String> dnsLookupResult= getDnsRecords(s,type);
+                                if(dnsLookupResult!=null){
+                                    for(String dns:dnsLookupResult){
+                                        if(SpfUtils.isIPv6(dns)){
+                                            if(SpfUtils.isIp6Match(senderIp,dns)){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
+                                        }else{
+                                            if(SpfUtils.isIp4Match(senderIp,dns)){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
+                                        }
 
-
+                                    }
+                                }
+                            }
+                        }
                         break;
                 }
 

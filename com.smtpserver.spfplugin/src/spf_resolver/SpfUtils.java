@@ -221,7 +221,7 @@ public class SpfUtils {
         }
     }
 
-    public String reverseIP4ToPtrAddress(String address){
+    public static String reverseIP4ToPtrAddress(String address){
         if(address==null){return null;}
         String addr[] = address.split("\\.");
         for (String part : addr) {
@@ -256,6 +256,10 @@ public class SpfUtils {
 
         sb.append("ip6.arpa.");
         return sb.toString();
+    }
+
+    public static boolean isIPv6(String ip){
+        return ip.contains(":");
     }
 
 
