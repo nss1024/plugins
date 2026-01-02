@@ -1,12 +1,9 @@
 package spf_resolver;
 
-import sun.security.jgss.GSSUtil;
-
 import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.SQLOutput;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

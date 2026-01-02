@@ -9,7 +9,6 @@ import org.xbill.DNS.Lookup;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -237,7 +236,7 @@ public class SpfResolver implements Callable<SpfResult> {
                             return SpfResult.PERMERROR;
                         }
                         lookupCounter++;
-                        List<String> mxRecords = getMxRecords(domanName);
+                        List<String> mxRecords = getMxRecords(tmp.getDomain() != null ? tmp.getDomain() : domanName);
                         if(mxRecords!=null){
                             Collections.reverse(mxRecords);
                             for(String s:mxRecords){
@@ -301,7 +300,7 @@ public class SpfResolver implements Callable<SpfResult> {
 
             }
         }
-        return null;
+        return SpfResult.NEUTRAL;
     }
 
 

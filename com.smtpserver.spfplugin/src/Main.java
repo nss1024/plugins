@@ -1,7 +1,11 @@
+/*This happens to be RFC 7208 ..... funny that :)
+ *
+ */
+
 import spf_resolver.Lookup;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
+
 
 public class Main {
     private static Map<String,List<String>> spfLists = new HashMap<>();
