@@ -183,10 +183,8 @@ public class SpfResolver implements Callable<SpfResult> {
                 switch(tmp.getType()){
                     case IP4:
                         if (tmp.getPrefix() == null) {
-
                             if(SpfUtils.isIp4Match(senderIp,tmp.getDomain())){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                         }else{
-
                             if(SpfUtils.matchesCidr(senderIp,tmp.getDomain(),tmp.getPrefix())){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                         }
                         break;

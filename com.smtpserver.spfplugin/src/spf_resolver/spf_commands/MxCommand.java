@@ -1,0 +1,41 @@
+package spf_resolver.spf_commands;
+
+import spf_resolver.SpfContext;
+import spf_resolver.SpfMechanism;
+import spf_resolver.SpfResult;
+import spf_resolver.SpfType;
+
+import java.util.Collections;
+import java.util.List;
+
+public class MxCommand implements SpfCommand{
+
+    @Override
+    public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+
+        if(spfContext.isMaxlookups()){
+            return SpfResult.PERMERROR;
+        }
+        if(spfContext.alreadyVisited(mechanism)){
+         return SpfResult.NONE;
+        }
+        spfContext.incrementLookups();
+        List<String> mxRecords = spfContext.getDnsService().getMxRecords(mechanism.getDomain() != null ? mechanism.getDomain() : spfContext.getDomain());
+        spfContext.alreadyVisited(mechanism);
+        if(mxRecords!=null){
+            Collections.reverse(mxRecords);
+            for(String s:mxRecords){
+                spfContext.getWorkQueue().add(
+                        new SpfMechanism(
+                                mechanism.getQualifier(),
+                                SpfType.A,
+                                s,
+                                null
+                        )
+                );
+            }
+        }
+
+        return SpfResult.NONE;
+    }
+}
