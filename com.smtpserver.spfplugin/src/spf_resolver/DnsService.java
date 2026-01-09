@@ -25,7 +25,7 @@ public class DnsService {
      * passed to the getMechanisms() method where it can be broken down to individual mechanism objects
      * for further processing.
      */
-    private String getSpfRecords(String domainName){
+    public String getSpfRecords(String domainName){
         try {
             SimpleResolver resolver = new SimpleResolver();
             resolver.setTimeout(Duration.of(timeout, ChronoUnit.SECONDS));
