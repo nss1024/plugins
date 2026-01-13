@@ -1,9 +1,6 @@
 package spf_resolver;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class SpfContext {
 
@@ -14,7 +11,7 @@ public class SpfContext {
 
 
     private int lookupCount = 0;
-    private final Deque<SpfMechanism> workQueue = new ArrayDeque<>();
+    private final Deque<SpfMechanism> workQueue;
     private final Set<String> visited = new HashSet<>();
 
     // Outcome
@@ -22,10 +19,11 @@ public class SpfContext {
 
     DnsService dnsService;
 
-    public SpfContext(String domain, String senderIp, int maxLookups) {
+    public SpfContext(String domain, String senderIp, int maxLookups, Deque<SpfMechanism> workQueue) {
         this.domain = domain;
         this.senderIp = senderIp;
         this.maxLookups = maxLookups;
+        this.workQueue = workQueue;
         dnsService=new DnsService();
     }
 
@@ -86,6 +84,10 @@ public class SpfContext {
     public boolean markVisited(SpfMechanism mechanism) {
         String key = mechanism.getType() + ":" + mechanism.getDomain();
         return visited.add(key);
+    }
+
+    public boolean isQueueEmpty(){
+        return workQueue.isEmpty();
     }
 
 }

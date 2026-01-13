@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Lookup;
+import spf_resolver.spf_commands.SpfCommandsRegister;
 
 
 import java.net.UnknownHostException;
@@ -15,18 +16,18 @@ import java.util.concurrent.Callable;
 
 public class SpfResolver implements Callable<SpfResult> {
 
-    String domanName;
+    String domainName;
     org.xbill.DNS.Lookup lookup = null;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private int lookupCounter = 0;// count number of dns lookups performed
-    private Set<SpfMechanism> visited = new HashSet<>();//domains and IPs already checked
-    private Stack<SpfMechanism> spfStack = new Stack<>();
     private int timeout = 5;
+    private String senderIp;
+    private final int MAX_LOOKUPS=10;
 
-
-    public SpfResolver(String domainName, int lookupTimeout){
-        this.domanName=domainName;
+    public SpfResolver(String domainName, String senderIp, int lookupTimeout){
+        this.domainName=domainName;
         this.timeout=lookupTimeout;
+        this.senderIp=senderIp;
 
     }
 
@@ -49,6 +50,16 @@ public class SpfResolver implements Callable<SpfResult> {
         //System.out.println(processSpfRecords(spfMechanism,spfStack,testSenderIp));
 
         System.out.println(Arrays.toString(getPtrRecords("8.8.8.8.in-addr.arpa.").toArray()));
+        String spfText = getSpfRecords(domainName);
+        List<SpfMechanism> mechanisms=null;
+        SpfContext context = null;
+        if(spfText!=null){
+            mechanisms=getMechanisms(spfText);
+        }
+        if(mechanisms!=null){
+            context = new SpfContext(domainName,senderIp,MAX_LOOKUPS,new ArrayDeque<>(mechanisms));
+        }
+
 
         return null;
     }
@@ -167,15 +178,13 @@ public class SpfResolver implements Callable<SpfResult> {
         for(int i=1;i<splitSpf.length;i++){
             result.add(SpfUtils.getSpfMechanismFromString(splitSpf[i]));
         }
-
+        Collections.reverse(result);
         return result;
     }
 
     private SpfResult processSpfRecords(List<SpfMechanism> spfMechanisms,Stack<SpfMechanism> spfStack, String senderIp){
         SpfMechanism tmp = null;
         List<String>ipList=null;
-        int length = spfMechanisms.size();
-        Collections.reverse(spfMechanisms);
         spfStack.addAll(spfMechanisms);
         if(!spfStack.isEmpty()) {
             while (!spfStack.isEmpty() && lookupCounter <= 10) {
@@ -234,7 +243,7 @@ public class SpfResolver implements Callable<SpfResult> {
                             return SpfResult.PERMERROR;
                         }
                         lookupCounter++;
-                        List<String> mxRecords = getMxRecords(tmp.getDomain() != null ? tmp.getDomain() : domanName);
+                        List<String> mxRecords = getMxRecords(tmp.getDomain() != null ? tmp.getDomain() : domainName);
                         if(mxRecords!=null){
                             Collections.reverse(mxRecords);
                             for(String s:mxRecords){
@@ -299,6 +308,21 @@ public class SpfResolver implements Callable<SpfResult> {
             }
         }
         return SpfResult.NEUTRAL;
+    }
+
+    private SpfResult processSpfRecord(SpfContext context){
+        SpfCommandsRegister commandsRegister = new SpfCommandsRegister();
+        SpfMechanism tmp = null;
+
+        if(!context.isQueueEmpty()){
+            while(!context.isQueueEmpty()){
+                tmp=context.getWorkQueue().pop();
+                SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,context);
+                if(result!=SpfResult.NONE){return result;}
+            }
+        }
+
+
     }
 
 

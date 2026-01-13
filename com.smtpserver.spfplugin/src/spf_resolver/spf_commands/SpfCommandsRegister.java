@@ -1,6 +1,6 @@
 package spf_resolver.spf_commands;
 
-import javax.activation.CommandMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +8,7 @@ public class SpfCommandsRegister {
 
     Map<String, SpfCommand> commandsMap = new HashMap<>();
 
-    SpfCommandsRegister(){
+    public SpfCommandsRegister(){
         loadCommands();
     }
 
