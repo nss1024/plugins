@@ -2,27 +2,23 @@
  *
  */
 
+import smtpSecurityApi.SecurityContext;
 import spf_resolver.Lookup;
 
 import java.util.*;
 
 
 public class Main {
-    private static Map<String,List<String>> spfLists = new HashMap<>();
+
 
 
     public static void main(String[] args)
     {
-        spfLists.put("ip4",new ArrayList<String>());
-        spfLists.put("ip6",new ArrayList<String>());
-        spfLists.put("includes",new ArrayList<String>());
-        spfLists.put("aRecords",new ArrayList<String>());
-
         System.out.println("Hello, World!");
-        Lookup lookup = new Lookup();
-        lookup.start();
-        lookup.lookupSpfRecord("nasstar.com");
-
-
+        SecurityContext sc = new SecurityContext();
+        sc.set("domain","nasstar.com");
+        sc.set("sender-ip","86.111.216.2");
+        SpfCheck spfCheck = new SpfCheck();
+        spfCheck.execute(sc);
     }
 }

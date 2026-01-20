@@ -49,7 +49,7 @@ public class SpfResolver implements Callable<SpfResult> {
         //System.out.println("-----------**--------------------");
         //System.out.println(processSpfRecords(spfMechanism,spfStack,testSenderIp));
 
-        System.out.println(Arrays.toString(getPtrRecords("8.8.8.8.in-addr.arpa.").toArray()));
+        //System.out.println(Arrays.toString(getPtrRecords("8.8.8.8.in-addr.arpa.").toArray()));
         String spfText = getSpfRecords(domainName);
         List<SpfMechanism> mechanisms=null;
         SpfContext context = null;
@@ -60,6 +60,9 @@ public class SpfResolver implements Callable<SpfResult> {
             context = new SpfContext(domainName,senderIp,MAX_LOOKUPS,new ArrayDeque<>(mechanisms));
         }
 
+        if(context!=null){
+            processSpfRecord(context);
+        }
 
         return null;
     }
@@ -316,13 +319,18 @@ public class SpfResolver implements Callable<SpfResult> {
 
         if(!context.isQueueEmpty()){
             while(!context.isQueueEmpty()){
+                System.out.println("Working on it ...");
+                System.out.println("Queue size: "+context.getWorkQueue().size());
                 tmp=context.getWorkQueue().pop();
+                //handle ALL - there may be many ALLs as the Includes mechanisms are flattened in the queue, only return a result if it's the last ALL in the queue
+                if(tmp.getType().equals(SpfType.ALL)&&context.isQueueEmpty()){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                 SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,context);
-                if(result!=SpfResult.NONE){return result;}
+                if(result!=SpfResult.NONE){
+                    System.out.println("Result found: "+result.toString());  return result;}
             }
         }
-
-
+        System.out.println("Search complete, no result!");
+        return null;
     }
 
 
