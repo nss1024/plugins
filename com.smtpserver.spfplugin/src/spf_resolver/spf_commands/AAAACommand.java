@@ -11,6 +11,7 @@ public class AAAACommand implements SpfCommand{
 
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        System.out.println("Processing AAAA");
         if(spfContext.getLookupCount()>=10){
             return SpfResult.PERMERROR;
         }

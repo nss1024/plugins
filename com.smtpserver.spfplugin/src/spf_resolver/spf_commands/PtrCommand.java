@@ -10,6 +10,7 @@ import java.util.List;
 public class PtrCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        System.out.println("Processing PTR");
         if(spfContext.getLookupCount()>=10){
             return SpfResult.PERMERROR;
         }

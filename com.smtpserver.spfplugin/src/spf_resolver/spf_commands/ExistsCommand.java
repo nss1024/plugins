@@ -11,6 +11,7 @@ import java.util.List;
 public class ExistsCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        System.out.println("Processing Exists!");
         if(spfContext.getLookupCount()>=10){
             return SpfResult.PERMERROR;
         }

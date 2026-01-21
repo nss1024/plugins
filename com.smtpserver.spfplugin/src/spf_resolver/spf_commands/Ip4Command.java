@@ -8,7 +8,7 @@ import spf_resolver.SpfUtils;
 public class Ip4Command implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
-
+        System.out.println("Processing IP4");
         if (mechanism.getPrefix() == null) {
             if(SpfUtils.isIp4Match(spfContext.getSenderIp(),mechanism.getDomain())){
                 return SpfUtils.getResultFromQualifier(mechanism.getQualifier());}

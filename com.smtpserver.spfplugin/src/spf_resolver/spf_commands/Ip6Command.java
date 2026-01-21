@@ -8,6 +8,7 @@ import spf_resolver.SpfUtils;
 public class Ip6Command implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        System.out.println("Processing IP6");
         if (mechanism.getPrefix() == null) {
             if(SpfUtils.isIp6Match(spfContext.getSenderIp(),mechanism.getDomain())){
                 return SpfUtils.getResultFromQualifier(mechanism.getQualifier());}

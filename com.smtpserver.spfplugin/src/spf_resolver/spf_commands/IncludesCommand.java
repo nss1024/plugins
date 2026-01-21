@@ -10,6 +10,7 @@ import java.util.List;
 public class IncludesCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        System.out.println("Processing Includes");
         if(spfContext.getLookupCount()>=10){
             return SpfResult.PERMERROR;
         }

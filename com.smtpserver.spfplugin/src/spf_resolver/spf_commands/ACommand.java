@@ -3,6 +3,7 @@ package spf_resolver.spf_commands;
 import org.xbill.DNS.Type;
 import spf_resolver.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,6 +13,7 @@ public class ACommand implements SpfCommand{
 
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        System.out.println("Processing A");
         if(spfContext.getLookupCount()>=10){
             return SpfResult.PERMERROR;
         }
@@ -25,6 +27,7 @@ public class ACommand implements SpfCommand{
         if(ipList!=null){
             Collections.reverse(ipList);
             for(String ip:ipList){
+
                 spfContext.getWorkQueue().add(
                         new SpfMechanism(
                                 mechanism.getQualifier(),

@@ -319,17 +319,16 @@ public class SpfResolver implements Callable<SpfResult> {
 
         if(!context.isQueueEmpty()){
             while(!context.isQueueEmpty()){
-                System.out.println("Working on it ...");
-                System.out.println("Queue size: "+context.getWorkQueue().size());
+
                 tmp=context.getWorkQueue().pop();
                 //handle ALL - there may be many ALLs as the Includes mechanisms are flattened in the queue, only return a result if it's the last ALL in the queue
-                if(tmp.getType().equals(SpfType.ALL)&&context.isQueueEmpty()){return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
+                if(tmp.getType().equals(SpfType.ALL)&&context.isQueueEmpty()){
+                    return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                 SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,context);
                 if(result!=SpfResult.NONE){
-                    System.out.println("Result found: "+result.toString());  return result;}
+                    }
             }
         }
-        System.out.println("Search complete, no result!");
         return null;
     }
 

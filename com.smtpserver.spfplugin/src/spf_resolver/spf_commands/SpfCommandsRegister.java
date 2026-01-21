@@ -26,7 +26,7 @@ public class SpfCommandsRegister {
         commandsMap.put("A",new ACommand());
         commandsMap.put("ALL",new AllCommand());
         commandsMap.put("EXISTS",new ExistsCommand());
-        commandsMap.put("INCLUDES",new IncludesCommand());
+        commandsMap.put("INCLUDE",new IncludesCommand());
         commandsMap.put("IP4",new Ip4Command());
         commandsMap.put("IP6",new Ip6Command());
         commandsMap.put("MX",new MxCommand());
