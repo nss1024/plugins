@@ -61,7 +61,7 @@ public class SpfResolver implements Callable<SpfResult> {
         }
 
         if(context!=null){
-            processSpfRecord(context);
+          return  processSpfRecord(context);
         }
 
         return null;
@@ -181,7 +181,6 @@ public class SpfResolver implements Callable<SpfResult> {
         for(int i=1;i<splitSpf.length;i++){
             result.add(SpfUtils.getSpfMechanismFromString(splitSpf[i]));
         }
-        Collections.reverse(result);
         return result;
     }
 
@@ -319,13 +318,13 @@ public class SpfResolver implements Callable<SpfResult> {
 
         if(!context.isQueueEmpty()){
             while(!context.isQueueEmpty()){
-
                 tmp=context.getWorkQueue().pop();
                 //handle ALL - there may be many ALLs as the Includes mechanisms are flattened in the queue, only return a result if it's the last ALL in the queue
                 if(tmp.getType().equals(SpfType.ALL)&&context.isQueueEmpty()){
                     return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                 SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,context);
                 if(result!=SpfResult.NONE){
+                    return result;
                     }
             }
         }

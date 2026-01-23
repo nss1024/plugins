@@ -11,6 +11,11 @@ public class IncludesCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing Includes");
+        if(spfContext.getVisited().contains(mechanism.getDomain())){
+            return SpfResult.NONE;
+        }else{
+            spfContext.getVisited().add(mechanism.getDomain());
+        }
         if(spfContext.getLookupCount()>=10){
             return SpfResult.PERMERROR;
         }

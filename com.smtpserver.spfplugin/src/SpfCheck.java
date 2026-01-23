@@ -19,10 +19,12 @@ public class SpfCheck implements SecurityPlugin {
         SpfResult result;
         try {
             result = lookup.lookupSpfRecord(domain,senderIp).get();
+            System.out.println(result);
         } catch (InterruptedException | ExecutionException e) {
            //TODO add log + appropriate return
             result=SpfResult.TEMPERROR;
         }
+
         return mapSpfToSecurity(result);
     }
 

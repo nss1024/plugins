@@ -16,11 +16,11 @@ public class SpfUtils {
 
     private static int ipToInt(String ip){
         int result = 0;
-        int shiftBy=24;
-        String[] ipElements = ip.split("\\.");
-        for(String s : ipElements){
-            result += Integer.parseInt(s)<<shiftBy;
-            shiftBy-=8;
+        int shiftBy = 24;
+        for (String s : ip.split("\\.")) {
+            int octet = Integer.parseInt(s) & 0xff;
+            result |= octet << shiftBy;
+            shiftBy -= 8;
         }
         return result;
     }
@@ -28,7 +28,7 @@ public class SpfUtils {
     private static int prefixToMask(int prefix){
         if(prefix == 0) return 0;
         int result = -1; // -1 = 1111111111111111
-        return result<< 32-prefix;
+        return result<< (32-prefix);
 
     }
 
@@ -41,6 +41,7 @@ public class SpfUtils {
     }
 
     public static boolean matchesCidr(String hostAddress, String spfAddress, int prefix){
+
         int hostIp = ipToInt(hostAddress);
         int spfIp = ipToInt(spfAddress);
         int mask = prefixToMask(prefix);

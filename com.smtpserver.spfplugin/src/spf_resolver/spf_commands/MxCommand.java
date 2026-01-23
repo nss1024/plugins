@@ -13,6 +13,11 @@ public class MxCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing MX");
+        if(spfContext.getVisited().contains(mechanism.getDomain())){
+            return SpfResult.NONE;
+        }else{
+            spfContext.getVisited().add(mechanism.getDomain());
+        }
         if(spfContext.isMaxlookups()){
             return SpfResult.PERMERROR;
         }
