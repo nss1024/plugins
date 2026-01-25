@@ -23,6 +23,7 @@ public class SpfCheck implements SecurityPlugin {
         } catch (InterruptedException | ExecutionException e) {
            //TODO add log + appropriate return
             result=SpfResult.TEMPERROR;
+
         }
 
         return mapSpfToSecurity(result);

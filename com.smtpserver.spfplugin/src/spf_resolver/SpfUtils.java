@@ -160,6 +160,12 @@ public class SpfUtils {
     private static SpfType getSpfTypeFromString(String s){
         String spfType="";
         if (s == null || s.isEmpty()) return null;
+        //Two mechanisms use "=", either redirect or exp, if we have = in the string, it will be one of these, return appropriate type
+        if(s.contains("=")){
+            spfType=s.split("=")[0];
+            if(spfType.equals("redirect")){return SpfType.REDIRECT;}
+            else{return SpfType.EXP;}
+        }
         final Set<Character> QUALIFIERS =new HashSet<>(Arrays.asList('+', '-', '~', '?'));
         if (QUALIFIERS.contains(s.charAt(0))) {
             s = s.substring(1);
@@ -197,7 +203,9 @@ public class SpfUtils {
                 prefix = Integer.valueOf(s.split("/")[1]);
                 domain = s.substring(s.indexOf(":")+1, s.indexOf("/"));
             } else {
-                domain = s.substring(s.indexOf(":")+1);
+                if(s.contains("=")){//allows for redirect and exp
+                    domain = s.substring(s.indexOf("=")+1);
+                }else{domain = s.substring(s.indexOf(":")+1);}
             }
             return new SpfMechanism(qualifier,type,domain,prefix);
         }catch (Exception e){

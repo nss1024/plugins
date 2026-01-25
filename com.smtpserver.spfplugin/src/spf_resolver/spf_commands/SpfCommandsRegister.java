@@ -31,6 +31,7 @@ public class SpfCommandsRegister {
         commandsMap.put("IP6",new Ip6Command());
         commandsMap.put("MX",new MxCommand());
         commandsMap.put("PTR",new PtrCommand());
+        commandsMap.put("REDIRECT",new RedirectCommand());
 
     }
 

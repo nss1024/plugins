@@ -147,7 +147,6 @@ public class DnsService {
         for(int i=1;i<splitSpf.length;i++){
             result.add(SpfUtils.getSpfMechanismFromString(splitSpf[i]));
         }
-        Collections.reverse(result);
         return result;
     }
 
