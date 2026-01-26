@@ -13,6 +13,7 @@ public class SpfContext {
     private int lookupCount = 0;
     private final Deque<SpfMechanism> workQueue;
     private final Set<String> visited = new HashSet<>();
+    private boolean redirectApplied=false;
 
     // Outcome
     private SpfResult result = null;
@@ -88,6 +89,17 @@ public class SpfContext {
 
     public boolean isQueueEmpty(){
         return workQueue.isEmpty();
+    }
+
+    public SpfResult applyRedirect(List<SpfMechanism> newMechanisms){
+        if(redirectApplied){return SpfResult.PERMERROR;}
+        redirectApplied=true;
+        pushMechanisms(newMechanisms);
+        return SpfResult.NONE;
+    }
+
+    private void pushMechanisms(List<SpfMechanism> newMechanisms){
+
     }
 
 }
