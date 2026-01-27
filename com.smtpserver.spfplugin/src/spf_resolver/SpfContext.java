@@ -99,7 +99,8 @@ public class SpfContext {
     }
 
     private void pushMechanisms(List<SpfMechanism> newMechanisms){
-
+            workQueue.clear();
+            workQueue.addAll(newMechanisms);
     }
 
 }

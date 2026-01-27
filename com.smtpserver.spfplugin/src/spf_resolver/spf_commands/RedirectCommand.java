@@ -10,16 +10,13 @@ import spf_resolver.SpfResult;
 
 import java.util.Arrays;
 import java.util.List;
-//TODO:  Only 1 redirect allowed, need to enforce !
+
 public class RedirectCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
-
         String redirectSpfRecord = spfContext.getDnsService().getSpfRecords(mechanism.getDomain());
         List<SpfMechanism> newMechanisms = spfContext.getDnsService().getMechanisms(redirectSpfRecord);
-
-        System.out.println("Redirect command new mechanisms: "+ Arrays.toString(newMechanisms.toArray()));
-
-        return null;
+        System.out.println("Applying redirect!");
+        return spfContext.applyRedirect(newMechanisms);
     }
 }
