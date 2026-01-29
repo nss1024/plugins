@@ -63,8 +63,7 @@ public class SpfResolver implements Callable<SpfResult> {
         if(!context.isQueueEmpty()){
             while(!context.isQueueEmpty()){
                 tmp=context.getWorkQueue().pop();
-                //handle ALL - there may be many ALLs as the Includes mechanisms are flattened in the queue, only return a result if it's the last ALL in the queue
-                if(tmp.getType().equals(SpfType.ALL)&&context.isQueueEmpty()){
+                if(tmp.getType().equals(SpfType.ALL)){
                     return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
                 SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,context);
                 if(result!=SpfResult.NONE){

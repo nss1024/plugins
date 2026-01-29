@@ -18,8 +18,10 @@ public class Main {
     {
         System.out.println("Hello, World!");
         SecurityContext sc = new SecurityContext();
-        sc.set("domain","gmail.com");
-        sc.set("sender-ip","86.111.216.1");
+        //sc.set("domain","gmail.com");
+        sc.set("domain","nasstar.com");
+        sc.set("sender-ip","89.111.216.1");
+        //sc.set("sender-ip","83.165.115.0");//253.165.115.0
         SpfCheck spfCheck = new SpfCheck();
         SecurityResult result = spfCheck.execute(sc);
         System.out.println("Security result: "+result);

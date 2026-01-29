@@ -33,6 +33,10 @@ public class SpfContext {
         lookupCount++;
     }
 
+    public void incrementLookupsBy(int count) {
+        lookupCount+=count;
+    }
+
     public boolean isMaxlookups(){
         return lookupCount==maxLookups;
     }
