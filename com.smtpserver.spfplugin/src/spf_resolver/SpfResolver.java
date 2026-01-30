@@ -2,14 +2,6 @@ package spf_resolver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xbill.DNS.*;
-import org.xbill.DNS.Lookup;
-import spf_resolver.spf_commands.SpfCommandsRegister;
-
-
-import java.net.UnknownHostException;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -49,28 +41,10 @@ public class SpfResolver implements Callable<SpfResult> {
         }
 
         if(context!=null){
-
-          return  processSpfRecord(context);
+            SpfEvaluator spfEvaluator = new SpfEvaluator();
+          return  spfEvaluator.processSpfRecord(context);
         }
 
-        return null;
-    }
-
-    private SpfResult processSpfRecord(SpfContext context){
-        SpfCommandsRegister commandsRegister = new SpfCommandsRegister();
-        SpfMechanism tmp = null;
-
-        if(!context.isQueueEmpty()){
-            while(!context.isQueueEmpty()){
-                tmp=context.getWorkQueue().pop();
-                if(tmp.getType().equals(SpfType.ALL)){
-                    return SpfUtils.getResultFromQualifier(tmp.getQualifier());}
-                SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,context);
-                if(result!=SpfResult.NONE){
-                    return result;
-                    }
-            }
-        }
         return null;
     }
 

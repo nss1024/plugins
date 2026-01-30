@@ -270,29 +270,4 @@ public class SpfUtils {
         return ip.contains(":");
     }
 
-    public static SpfResult processIncludeSpfRecords(SpfContext includeContext, SpfContext mainContext){
-        SpfCommandsRegister commandsRegister = new SpfCommandsRegister();
-        SpfMechanism tmp = null;
-
-        if(!includeContext.isQueueEmpty()){
-            while(!includeContext.isQueueEmpty()){
-                if(includeContext.getLookupCount()+mainContext.getLookupCount()>mainContext.getMaxLookups()){
-                    return SpfResult.PERMERROR;
-                }
-                tmp=includeContext.getWorkQueue().pop();
-                //handle ALL - there may be many ALLs as the Includes mechanisms are flattened in the queue, only return a result if it's the last ALL in the queue
-                if(tmp.getType().equals(SpfType.ALL)){
-                    mainContext.incrementLookupsBy(includeContext.getLookupCount());
-                    return SpfResult.NONE;}
-                SpfResult result = commandsRegister.getCommand(tmp.getType().toString()).execute(tmp,includeContext);
-                if(result!=SpfResult.NONE){
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
-
-
-
 }

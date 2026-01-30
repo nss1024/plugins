@@ -1,12 +1,8 @@
 package spf_resolver.spf_commands;
 
-import spf_resolver.SpfContext;
-import spf_resolver.SpfMechanism;
-import spf_resolver.SpfResult;
-import spf_resolver.SpfUtils;
+import spf_resolver.*;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.List;
 
 public class IncludesCommand implements SpfCommand{
@@ -26,9 +22,8 @@ public class IncludesCommand implements SpfCommand{
         if(records!=null) {
             List<SpfMechanism> newMechanismList = spfContext.getDnsService().getMechanisms(records);
             SpfContext includeContext = new SpfContext(spfContext.getDomain(),spfContext.getSenderIp(),spfContext.getMaxLookups(),new ArrayDeque<>(newMechanismList));
-            SpfResult result = SpfUtils.processIncludeSpfRecords(includeContext,spfContext);
-            System.out.println(result);
-            return result;
+            SpfEvaluator evaluator = new SpfEvaluator();
+            return evaluator.processIncludeSpfRecords(includeContext, spfContext);
         }
         return SpfResult.NONE;
     }

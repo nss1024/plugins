@@ -1,5 +1,8 @@
 package spf_resolver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 public class SpfContext {
@@ -14,6 +17,8 @@ public class SpfContext {
     private final Deque<SpfMechanism> workQueue;
     private final Set<String> visited = new HashSet<>();
     private boolean redirectApplied=false;
+
+
 
     // Outcome
     private SpfResult result = null;

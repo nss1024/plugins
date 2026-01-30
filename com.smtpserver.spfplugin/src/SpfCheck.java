@@ -1,3 +1,5 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import smtpSecurityApi.SecurityContext;
 import smtpSecurityApi.SecurityPlugin;
 import smtpSecurityApi.SecurityResult;
@@ -8,7 +10,7 @@ import spf_resolver.SpfResult;
 import java.util.concurrent.ExecutionException;
 
 public class SpfCheck implements SecurityPlugin {
-
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public SecurityResult execute(SecurityContext securityContext) {
@@ -21,15 +23,18 @@ public class SpfCheck implements SecurityPlugin {
             result = lookup.lookupSpfRecord(domain,senderIp).get();
             System.out.println(result);
         } catch (InterruptedException | ExecutionException e) {
-           //TODO add log + appropriate return
+           logger.error("Error starting SPF evaluation!"+e.getMessage());
             result=SpfResult.TEMPERROR;
-
         }
 
         return mapSpfToSecurity(result);
     }
 
     public SecurityResult mapSpfToSecurity(SpfResult spf) {
+        if(spf==null){
+            logger.error("Spf result returned a null, cannot determine security result!");
+            return SecurityResult.TEMPORARY_REJECT;
+        }
          switch (spf) {
             case PASS : return SecurityResult.ALLOW;
              case FAIL :
