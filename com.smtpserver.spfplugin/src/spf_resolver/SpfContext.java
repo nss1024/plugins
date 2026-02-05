@@ -23,14 +23,14 @@ public class SpfContext {
     // Outcome
     private SpfResult result = null;
 
-    DnsService dnsService;
+    private final DnsService dnsService;
 
-    public SpfContext(String domain, String senderIp, int maxLookups, Deque<SpfMechanism> workQueue) {
+    public SpfContext(String domain, String senderIp, int maxLookups, Deque<SpfMechanism> workQueue, DnsService dnsService) {
         this.domain = domain;
         this.senderIp = senderIp;
         this.maxLookups = maxLookups;
         this.workQueue = workQueue;
-        dnsService=new DnsService();
+        this.dnsService=dnsService;
     }
 
 
@@ -43,7 +43,7 @@ public class SpfContext {
     }
 
     public boolean isMaxlookups(){
-        return lookupCount==maxLookups;
+        return lookupCount>=maxLookups;
     }
 
     public boolean hasResult() {

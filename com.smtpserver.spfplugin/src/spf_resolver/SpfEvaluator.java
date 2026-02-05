@@ -19,7 +19,7 @@ public class SpfEvaluator {
                 }
             }
         }
-        return null;
+        return SpfResult.NONE;
     }
 
     public SpfResult processIncludeSpfRecords(SpfContext includeContext, SpfContext mainContext){
@@ -42,7 +42,7 @@ public class SpfEvaluator {
                 }
             }
         }
-        return null;
+        return SpfResult.NONE;
     }
 
 }

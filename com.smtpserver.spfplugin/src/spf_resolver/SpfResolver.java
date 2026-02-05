@@ -11,7 +11,6 @@ public class SpfResolver implements Callable<SpfResult> {
     String domainName;
     org.xbill.DNS.Lookup lookup = null;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private int lookupCounter = 0;// count number of dns lookups performed
     private int timeout = 5;
     private String senderIp;
     private final int MAX_LOOKUPS=10;
@@ -37,7 +36,7 @@ public class SpfResolver implements Callable<SpfResult> {
         }
 
         if(mechanisms!=null){
-            context = new SpfContext(domainName,senderIp,MAX_LOOKUPS,new ArrayDeque<>(mechanisms));
+            context = new SpfContext(domainName,senderIp,MAX_LOOKUPS,new ArrayDeque<>(mechanisms), dnsService);
         }
 
         if(context!=null){
@@ -45,7 +44,7 @@ public class SpfResolver implements Callable<SpfResult> {
           return  spfEvaluator.processSpfRecord(context);
         }
 
-        return null;
+        return SpfResult.NONE;
     }
 
 
