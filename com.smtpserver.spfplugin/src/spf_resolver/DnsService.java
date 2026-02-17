@@ -78,8 +78,14 @@ public class DnsService {
             if (aRecords != null) {
                 List<String> ipList = new ArrayList<>();
                 for (Record rec : aRecords) {
-                    ARecord a = (ARecord) rec;
-                    ipList.add(a.getAddress().getHostAddress());
+                    if(rec instanceof ARecord){
+                        ARecord a =(ARecord) rec;
+                        ipList.add(a.getAddress().getHostAddress());
+                    }else{
+                        AAAARecord a =(AAAARecord) rec;
+                        ipList.add(a.getAddress().getHostAddress());
+                    }
+
                 }
                 return ipList;
             }

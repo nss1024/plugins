@@ -6,19 +6,16 @@ import java.util.Map;
 
 public class SpfCommandsRegister {
 
-    Map<String, SpfCommand> commandsMap = new HashMap<>();
+  private static final Map<String, SpfCommand> commandsMap = new HashMap<>();
 
     public SpfCommandsRegister(){
         loadCommands();
     }
 
     public SpfCommand getCommand(String command){
-        if(commandsMap!=null && !commandsMap.isEmpty()){
-            return commandsMap.get(command.toUpperCase());
-        }else{
             loadCommands();
             return commandsMap.get(command.toUpperCase());
-        }
+
     }
 
     private void loadCommands(){

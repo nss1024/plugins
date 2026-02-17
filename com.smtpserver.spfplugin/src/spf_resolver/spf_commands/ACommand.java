@@ -3,23 +3,22 @@ package spf_resolver.spf_commands;
 import org.xbill.DNS.Type;
 import spf_resolver.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class ACommand implements SpfCommand{
     private List<String> ipList=null;
-    DnsService dnsService=new DnsService();
+
 
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing A");
-        if(spfContext.getVisited().contains(mechanism.getDomain())){
+        if(spfContext.alreadyVisited(mechanism)){
             return SpfResult.NONE;
         }else{
-            spfContext.getVisited().add(mechanism.getDomain());
+            spfContext.markVisited(mechanism);
         }
-        if(spfContext.getLookupCount()>=10){
+        if(spfContext.isMaxlookups()){
             return SpfResult.PERMERROR;
         }
 
@@ -28,9 +27,9 @@ public class ACommand implements SpfCommand{
         }
         spfContext.incrementLookups();
         spfContext.alreadyVisited(mechanism);
-        ipList = dnsService.getDnsRecords(mechanism.getDomain(), Type.A);
+        ipList = spfContext.getDnsService().getDnsRecords(mechanism.getDomain(), Type.A);
         if(ipList!=null){
-            Collections.reverse(ipList);
+
             for(String ip:ipList){
 
                 spfContext.getWorkQueue().add(
