@@ -5,7 +5,6 @@ import spf_resolver.SpfMechanism;
 import spf_resolver.SpfResult;
 import spf_resolver.SpfUtils;
 
-import java.sql.SQLOutput;
 
 public class Ip4Command implements SpfCommand{
     @Override

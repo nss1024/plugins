@@ -16,6 +16,7 @@ public class RedirectCommand implements SpfCommand{
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         String redirectSpfRecord = spfContext.getDnsService().getSpfRecords(mechanism.getDomain());
         List<SpfMechanism> newMechanisms = spfContext.getDnsService().getMechanisms(redirectSpfRecord);
+        if(newMechanisms==null){return SpfResult.PERMERROR;}
         System.out.println("Applying redirect!");
         return spfContext.applyRedirect(newMechanisms);
     }

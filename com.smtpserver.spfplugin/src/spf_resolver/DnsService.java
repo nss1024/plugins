@@ -150,7 +150,9 @@ public class DnsService {
         List<SpfMechanism> result = new ArrayList<>();
         String[] splitSpf = spfTxt.split(" ");
         for(int i=1;i<splitSpf.length;i++){
-            result.add(SpfUtils.getSpfMechanismFromString(splitSpf[i]));
+            SpfMechanism mechanism =SpfUtils.getSpfMechanismFromString(splitSpf[i]);
+            if(mechanism==null){return null;}
+            result.add(mechanism);
         }
         return result;
     }

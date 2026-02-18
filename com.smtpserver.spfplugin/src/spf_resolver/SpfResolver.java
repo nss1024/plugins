@@ -32,6 +32,7 @@ public class SpfResolver implements Callable<SpfResult> {
         if(spfText!=null){
             System.out.println("Spf text: "+spfText);
             mechanisms=dnsService.getMechanisms(spfText);
+            if(mechanisms==null){return SpfResult.PERMERROR;}
             System.out.println("Generated mechanisms :"+Arrays.toString(mechanisms.toArray()));
         }
 

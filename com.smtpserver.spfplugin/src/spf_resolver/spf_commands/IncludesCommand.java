@@ -21,6 +21,7 @@ public class IncludesCommand implements SpfCommand{
         String records = spfContext.getDnsService().getSpfRecords(mechanism.getDomain());
         if(records!=null) {
             List<SpfMechanism> newMechanismList = spfContext.getDnsService().getMechanisms(records);
+            if(newMechanismList==null){return SpfResult.PERMERROR;}
             SpfContext includeContext = new SpfContext(spfContext.getDomain(),spfContext.getSenderIp(),spfContext.getMaxLookups(),new ArrayDeque<>(newMechanismList), spfContext.getDnsService());
             SpfEvaluator evaluator = new SpfEvaluator();
             return evaluator.processIncludeSpfRecords(includeContext, spfContext);

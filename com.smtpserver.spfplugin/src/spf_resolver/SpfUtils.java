@@ -184,7 +184,7 @@ public class SpfUtils {
             case "all": return SpfType.ALL;
             case "exists": return SpfType.EXISTS;
             case "ptr": return SpfType.PTR;
-            default:  return SpfType.ALL;
+            default:  return null;
         }
     }
 
@@ -196,6 +196,7 @@ public class SpfUtils {
         try {
             SpfQualifier qualifier = hasSpfQualifier(s) ? getQualifierFromString(s):SpfQualifier.PASS;
             SpfType type = getSpfTypeFromString(s);
+            if(type==null){return null;}
             if(type.equals(SpfType.ALL)){
                 return new SpfMechanism(qualifier,type,null,null);
             }
