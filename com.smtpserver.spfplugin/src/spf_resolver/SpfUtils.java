@@ -1,6 +1,8 @@
 package spf_resolver;
 
 import spf_resolver.spf_commands.SpfCommandsRegister;
+import spf_resolver.spf_custom_exceptions.MalformedSpfMechanismException;
+import spf_resolver.spf_custom_exceptions.UnknownSpfTypeException;
 
 import java.math.BigInteger;
 import java.net.Inet6Address;
@@ -160,15 +162,16 @@ public class SpfUtils {
     }
 
     private static SpfType getSpfTypeFromString(String s){
-        String spfType="";
+        String spfType;
         if (s == null || s.isEmpty()) return null;
         //Two mechanisms use "=", either redirect or exp, if we have = in the string, it will be one of these, return appropriate type
         if(s.contains("=")){
             spfType=s.split("=")[0];
             if(spfType.equals("redirect")){return SpfType.REDIRECT;}
-            else{return SpfType.EXP;}
+            if(spfType.equals("exp")){return SpfType.EXP;}
+            throw new UnknownSpfTypeException("Unknown modifier "+s);
         }
-        final Set<Character> QUALIFIERS =new HashSet<>(Arrays.asList('+', '-', '~', '?'));
+
         if (QUALIFIERS.contains(s.charAt(0))) {
             s = s.substring(1);
         }
@@ -184,7 +187,7 @@ public class SpfUtils {
             case "all": return SpfType.ALL;
             case "exists": return SpfType.EXISTS;
             case "ptr": return SpfType.PTR;
-            default:  return null;
+            default:  throw new UnknownSpfTypeException("Unknown spf type received: "+s);
         }
     }
 
@@ -193,10 +196,15 @@ public class SpfUtils {
     }
 
     public static SpfMechanism getSpfMechanismFromString(String s){
-        try {
+        try{
             SpfQualifier qualifier = hasSpfQualifier(s) ? getQualifierFromString(s):SpfQualifier.PASS;
-            SpfType type = getSpfTypeFromString(s);
-            if(type==null){return null;}
+            SpfType type;
+            try{
+                type=getSpfTypeFromString(s);
+            }catch(UnknownSpfTypeException e){
+                throw new MalformedSpfMechanismException(e.getMessage());
+            }
+
             if(type.equals(SpfType.ALL)){
                 return new SpfMechanism(qualifier,type,null,null);
             }
@@ -211,9 +219,9 @@ public class SpfUtils {
                 }else{domain = s.substring(s.indexOf(":")+1);}
             }
             return new SpfMechanism(qualifier,type,domain,prefix);
+
         }catch (Exception e){
-            System.out.println(e);
-            return null;
+            throw new MalformedSpfMechanismException(e.getMessage());
         }
 
     }
