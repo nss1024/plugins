@@ -5,6 +5,7 @@ import spf_resolver.SpfContext;
 import spf_resolver.SpfMechanism;
 import spf_resolver.SpfResult;
 import spf_resolver.SpfUtils;
+import spf_resolver.spf_custom_exceptions.SpfDnsException;
 
 import java.util.List;
 
@@ -16,7 +17,12 @@ public class ExistsCommand implements SpfCommand{
             return SpfResult.PERMERROR;
         }
         spfContext.incrementLookups();
-        List<String> ipList = spfContext.getDnsService().getDnsRecords(mechanism.getDomain(), Type.A);
+        List<String> ipList;
+        try {
+            ipList = spfContext.getDnsService().getDnsRecords(mechanism.getDomain(), Type.A);
+        }catch (SpfDnsException e){
+            return  SpfResult.TEMPERROR;
+        }
         if(ipList==null){
             return SpfResult.NONE;
         }

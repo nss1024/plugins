@@ -4,6 +4,7 @@ import spf_resolver.SpfContext;
 import spf_resolver.SpfMechanism;
 import spf_resolver.SpfResult;
 import spf_resolver.SpfUtils;
+import spf_resolver.spf_custom_exceptions.SpfDnsException;
 
 import java.util.List;
 
@@ -18,12 +19,21 @@ public class PtrCommand implements SpfCommand{
         String ptrAddr = SpfUtils.isIPv6(spfContext.getSenderIp())?SpfUtils.reverseIP6ToPtrAddress(spfContext.getSenderIp()):SpfUtils.reverseIP4ToPtrAddress(spfContext.getSenderIp());
         List<String> ptrLookupResult = null;
         if(ptrAddr!=null) {
-            ptrLookupResult = spfContext.getDnsService().getPtrRecords(ptrAddr);
+            try {
+                ptrLookupResult = spfContext.getDnsService().getPtrRecords(ptrAddr);
+            }catch(SpfDnsException e){
+                return SpfResult.TEMPERROR;
+            }
         }
         if(ptrLookupResult!=null){
             for(String s:ptrLookupResult){
                 int type=SpfUtils.isIPv6(spfContext.getSenderIp())?28:1;
-                List<String> dnsLookupResult= spfContext.getDnsService().getDnsRecords(s,type);
+                List<String> dnsLookupResult;
+                try {
+                    dnsLookupResult = spfContext.getDnsService().getDnsRecords(s, type);
+                }catch (SpfDnsException e){
+                    return SpfResult.TEMPERROR;
+                }
                 if(dnsLookupResult!=null){
                     for(String dns:dnsLookupResult){
                         if(SpfUtils.isIPv6(dns)){

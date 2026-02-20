@@ -2,6 +2,7 @@ package spf_resolver;
 
 import spf_resolver.spf_commands.SpfCommandsRegister;
 import spf_resolver.spf_custom_exceptions.MalformedSpfMechanismException;
+import spf_resolver.spf_custom_exceptions.SpfParseException;
 import spf_resolver.spf_custom_exceptions.UnknownSpfTypeException;
 
 import java.math.BigInteger;
@@ -221,7 +222,7 @@ public class SpfUtils {
             return new SpfMechanism(qualifier,type,domain,prefix);
 
         }catch (Exception e){
-            throw new MalformedSpfMechanismException(e.getMessage());
+            throw new SpfParseException(e.getMessage());
         }
 
     }

@@ -2,6 +2,7 @@ package spf_resolver.spf_commands;
 
 import org.xbill.DNS.Type;
 import spf_resolver.*;
+import spf_resolver.spf_custom_exceptions.SpfDnsException;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,11 @@ public class ACommand implements SpfCommand{
         }
         spfContext.incrementLookups();
         spfContext.alreadyVisited(mechanism);
-        ipList = spfContext.getDnsService().getDnsRecords(mechanism.getDomain(), Type.A);
+        try {
+            ipList = spfContext.getDnsService().getDnsRecords(mechanism.getDomain(), Type.A);
+        }catch (SpfDnsException e){
+            return SpfResult.TEMPERROR;
+        }
         if(ipList!=null){
 
             for(String ip:ipList){

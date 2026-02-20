@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Lookup;
+import spf_resolver.spf_custom_exceptions.SpfDnsException;
+import spf_resolver.spf_custom_exceptions.SpfParseException;
 
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -71,25 +73,28 @@ public class DnsService {
 
             } catch (TextParseException | UnknownHostException e) {
                 logger.warn("Could not look up domain for : {} !",domainName);
-                return null;
+                throw new SpfDnsException("Failed to look up DNS record!");
             }
 
             Record[] aRecords = lookup.run();
-            if (aRecords != null) {
-                List<String> ipList = new ArrayList<>();
-                for (Record rec : aRecords) {
-                    if(rec instanceof ARecord){
-                        ARecord a =(ARecord) rec;
-                        ipList.add(a.getAddress().getHostAddress());
-                    }else{
-                        AAAARecord a =(AAAARecord) rec;
-                        ipList.add(a.getAddress().getHostAddress());
+            try {
+                if (aRecords != null) {
+                    List<String> ipList = new ArrayList<>();
+                    for (Record rec : aRecords) {
+                        if (rec instanceof ARecord) {
+                            ARecord a = (ARecord) rec;
+                            ipList.add(a.getAddress().getHostAddress());
+                        } else {
+                            AAAARecord a = (AAAARecord) rec;
+                            ipList.add(a.getAddress().getHostAddress());
+                        }
+
                     }
-
+                    return ipList;
                 }
-                return ipList;
+            } catch (Exception e) {
+                throw new SpfDnsException("Failed to parse DNS record",e);
             }
-
         }
         return null;
     }
@@ -103,19 +108,22 @@ public class DnsService {
                 lookup.setResolver(resolver);
             } catch (TextParseException | UnknownHostException e) {
                 logger.warn("Could not look up PTR record");
-                return null;
+                throw new SpfDnsException("Failed to look up PTR record!");
             }
         }
-
         Record[] records = lookup.run();
-        if(records != null) {
-            List<String> recordslist=new ArrayList<>();
-            for (Record r : records) {
-                PTRRecord ptr = (PTRRecord) r;
-                String host = ptr.getTarget().toString(true);
-                recordslist.add(host);
+        try {
+            if (records != null) {
+                List<String> recordslist = new ArrayList<>();
+                for (Record r : records) {
+                    PTRRecord ptr = (PTRRecord) r;
+                    String host = ptr.getTarget().toString(true);
+                    recordslist.add(host);
+                }
+                return recordslist;
             }
-            return recordslist;
+        }catch(Exception e){
+            throw new SpfDnsException("Failed to parse PTR record!", e);
         }
         return null;
     }
@@ -129,19 +137,23 @@ public class DnsService {
             lookup.setResolver(resolver);
         } catch (TextParseException | UnknownHostException e) {
             logger.warn("Could not look up mx record!");
-            return null;
+            throw new SpfDnsException("Failed to look up MX record!");
         }
         Record[] records = lookup.run();
 
-        if(records != null) {
-            List<String> recordslist=new ArrayList<>();
-            for (Record r : records) {
-                MXRecord mx = (MXRecord) r;
-                String host = mx.getTarget().toString(true);
-                if (host.endsWith(".")) host = host.substring(0, host.length() - 1);
-                recordslist.add(host);
+        try {
+            if (records != null) {
+                List<String> recordslist = new ArrayList<>();
+                for (Record r : records) {
+                    MXRecord mx = (MXRecord) r;
+                    String host = mx.getTarget().toString(true);
+                    if (host.endsWith(".")) host = host.substring(0, host.length() - 1);
+                    recordslist.add(host);
+                }
+                return recordslist;
             }
-            return recordslist;
+        }catch(Exception e){
+           throw new SpfDnsException("Failed to parse MX record!", e);
         }
         return null;
     }
@@ -150,9 +162,11 @@ public class DnsService {
         List<SpfMechanism> result = new ArrayList<>();
         String[] splitSpf = spfTxt.split(" ");
         for(int i=1;i<splitSpf.length;i++){
-            SpfMechanism mechanism =SpfUtils.getSpfMechanismFromString(splitSpf[i]);
-            if(mechanism==null){return null;}
-            result.add(mechanism);
+                SpfMechanism mechanism = SpfUtils.getSpfMechanismFromString(splitSpf[i]);
+                if (mechanism == null) {
+                    return null;
+                }
+                result.add(mechanism);
         }
         return result;
     }

@@ -2,6 +2,8 @@ package spf_resolver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spf_resolver.spf_custom_exceptions.SpfParseException;
+
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -31,8 +33,11 @@ public class SpfResolver implements Callable<SpfResult> {
         SpfContext context = null;
         if(spfText!=null){
             System.out.println("Spf text: "+spfText);
-            mechanisms=dnsService.getMechanisms(spfText);
-            if(mechanisms==null){return SpfResult.PERMERROR;}
+            try {
+                mechanisms = dnsService.getMechanisms(spfText);
+            }catch (SpfParseException e){
+                return SpfResult.PERMERROR;
+            }
             System.out.println("Generated mechanisms :"+Arrays.toString(mechanisms.toArray()));
         }
 

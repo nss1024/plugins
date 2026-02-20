@@ -4,6 +4,7 @@ import spf_resolver.SpfContext;
 import spf_resolver.SpfMechanism;
 import spf_resolver.SpfResult;
 import spf_resolver.SpfType;
+import spf_resolver.spf_custom_exceptions.SpfDnsException;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +26,12 @@ public class MxCommand implements SpfCommand{
          return SpfResult.NONE;
         }
         spfContext.incrementLookups();
-        List<String> mxRecords = spfContext.getDnsService().getMxRecords(mechanism.getDomain() != null ? mechanism.getDomain() : spfContext.getDomain());
+        List<String> mxRecords;
+        try {
+            mxRecords = spfContext.getDnsService().getMxRecords(mechanism.getDomain() != null ? mechanism.getDomain() : spfContext.getDomain());
+        }catch (SpfDnsException e){
+            return SpfResult.TEMPERROR;
+        }
         spfContext.alreadyVisited(mechanism);
         if(mxRecords!=null){
             Collections.reverse(mxRecords);
