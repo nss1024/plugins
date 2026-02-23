@@ -14,27 +14,24 @@ public class MxCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing MX");
-        if(spfContext.getVisited().contains(mechanism.getDomain())){
+        if(spfContext.alreadyVisited(mechanism)){
             return SpfResult.NONE;
         }else{
-            spfContext.getVisited().add(mechanism.getDomain());
+            spfContext.markVisited(mechanism);
         }
+        spfContext.incrementLookups();
         if(spfContext.isMaxlookups()){
             return SpfResult.PERMERROR;
         }
-        if(spfContext.alreadyVisited(mechanism)){
-         return SpfResult.NONE;
-        }
-        spfContext.incrementLookups();
         List<String> mxRecords;
         try {
             mxRecords = spfContext.getDnsService().getMxRecords(mechanism.getDomain() != null ? mechanism.getDomain() : spfContext.getDomain());
         }catch (SpfDnsException e){
             return SpfResult.TEMPERROR;
         }
-        spfContext.alreadyVisited(mechanism);
+
         if(mxRecords!=null){
-            Collections.reverse(mxRecords);
+
             for(String s:mxRecords){
                 spfContext.getWorkQueue().add(
                         new SpfMechanism(
