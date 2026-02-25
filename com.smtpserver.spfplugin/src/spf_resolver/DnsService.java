@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Lookup;
 import spf_resolver.spf_custom_exceptions.SpfDnsException;
-import spf_resolver.spf_custom_exceptions.SpfParseException;
+
 
 import java.net.UnknownHostException;
 import java.time.Duration;
