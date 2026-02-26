@@ -9,23 +9,30 @@ public class IncludesCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing Includes for: "+mechanism.getDomain());
-        if(spfContext.getVisited().contains(mechanism.getDomain())){
-            return SpfResult.NONE;
-        }else{
-            spfContext.getVisited().add(mechanism.getDomain());
-        }
-        if(spfContext.getLookupCount()>=10){
+        if(spfContext.alreadyVisited(mechanism)){
             return SpfResult.PERMERROR;
+        }else{
+            spfContext.markVisited(mechanism);
         }
         spfContext.incrementLookups();
+        if(spfContext.isMaxlookups()){
+            return SpfResult.PERMERROR;
+        }
+
         String records = spfContext.getDnsService().getSpfRecords(mechanism.getDomain());
-        if(records!=null) {
+        if(records==null){return SpfResult.PERMERROR;}
+
             List<SpfMechanism> newMechanismList = spfContext.getDnsService().getMechanisms(records);
             if(newMechanismList==null){return SpfResult.PERMERROR;}
-            SpfContext includeContext = new SpfContext(spfContext.getDomain(),spfContext.getSenderIp(),spfContext.getMaxLookups(),new ArrayDeque<>(newMechanismList), spfContext.getDnsService());
+            SpfContext includeContext = new SpfContext(mechanism.getDomain(),spfContext.getSenderIp(),spfContext.getMaxLookups(),new ArrayDeque<>(newMechanismList), spfContext.getDnsService());
             SpfEvaluator evaluator = new SpfEvaluator();
-            return evaluator.processIncludeSpfRecords(includeContext, spfContext);
-        }
+            SpfResult result = evaluator.processIncludeSpfRecords(includeContext, spfContext);
+            if (result == SpfResult.PASS) {
+                return SpfUtils.getResultFromQualifier(mechanism.getQualifier());
+            }
+            if (result == SpfResult.TEMPERROR) return SpfResult.TEMPERROR;
+            if (result == SpfResult.PERMERROR) return SpfResult.PERMERROR;
+
         return SpfResult.NONE;
     }
 }

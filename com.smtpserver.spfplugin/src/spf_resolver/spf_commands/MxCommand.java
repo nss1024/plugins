@@ -3,6 +3,7 @@ package spf_resolver.spf_commands;
 import spf_resolver.*;
 import spf_resolver.spf_custom_exceptions.SpfDnsException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,6 +12,10 @@ public class MxCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing MX");
+        String domain = mechanism.getDomain();
+        if (domain == null || domain.isEmpty()) {
+            domain = spfContext.getDomain();
+        }
         if(spfContext.alreadyVisited(mechanism)){
             return SpfResult.NONE;
         }else{
@@ -22,12 +27,16 @@ public class MxCommand implements SpfCommand{
         }
         List<String> mxRecords;
         try {
-            mxRecords = spfContext.getDnsService().getMxRecords(mechanism.getDomain() != null ? mechanism.getDomain() : spfContext.getDomain());
+            mxRecords = spfContext.getDnsService().getMxRecords(domain != null ? mechanism.getDomain() : spfContext.getDomain());
         }catch (SpfDnsException e){
             return SpfResult.TEMPERROR;
         }
 
-        if(mxRecords!=null){
+        if(mxRecords==null||mxRecords.isEmpty()){
+            mxRecords=new ArrayList<>();
+            mxRecords.add(mechanism.getDomain());
+        }
+        if(mxRecords.size()>10){return SpfResult.PERMERROR;}
 
             //Need to retrieve A or AAAA for each record returned and check if sender IP matches.
             //Based on sender IP , only need to do either A or AAAA
@@ -41,9 +50,9 @@ public class MxCommand implements SpfCommand{
                     return SpfResult.PERMERROR;
                 }
                 ipAddressList = spfContext.getDnsService().getDnsRecords(s,dnsLookupType);
-                if(ipAddressList==null){return SpfResult.NONE;}
+                if(ipAddressList==null || ipAddressList.isEmpty()){continue;}
                 for(String ip : ipAddressList){//evaluate each IP or CIDR
-                    if (ipAddressList.isEmpty()) {
+                    if (ip.isEmpty()) {
                         continue;
                     }
                         if(dnsLookupType==1) {//use IP4 evaluation
@@ -58,7 +67,7 @@ public class MxCommand implements SpfCommand{
                 }
 
             }
-        }
+
 
         return SpfResult.NONE;
     }
