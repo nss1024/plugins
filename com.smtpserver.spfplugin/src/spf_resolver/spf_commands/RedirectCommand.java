@@ -14,7 +14,22 @@ import java.util.List;
 public class RedirectCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
+        spfContext.incrementLookups();
+        if (spfContext.isMaxlookups()) {
+            return SpfResult.PERMERROR;
+        }
+
+        if(spfContext.alreadyVisited(mechanism)){
+            return SpfResult.PERMERROR;
+        }else{
+            spfContext.markVisited(mechanism);
+        }
+
+
         String redirectSpfRecord = spfContext.getDnsService().getSpfRecords(mechanism.getDomain());
+        if (redirectSpfRecord == null) {
+            return SpfResult.PERMERROR;
+        }
         List<SpfMechanism> newMechanisms = spfContext.getDnsService().getMechanisms(redirectSpfRecord);
         if(newMechanisms==null){return SpfResult.PERMERROR;}
         System.out.println("Applying redirect!");
