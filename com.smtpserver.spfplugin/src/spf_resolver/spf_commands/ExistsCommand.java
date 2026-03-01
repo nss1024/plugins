@@ -13,7 +13,11 @@ public class ExistsCommand implements SpfCommand{
     @Override
     public SpfResult execute(SpfMechanism mechanism, SpfContext spfContext) {
         System.out.println("Processing Exists!");
-        if(spfContext.getLookupCount()>=10){
+        if (mechanism.getDomain() == null || mechanism.getDomain().isEmpty()) {
+            return SpfResult.PERMERROR;
+        }
+
+        if(spfContext.isMaxlookups()){
             return SpfResult.PERMERROR;
         }
         spfContext.incrementLookups();
@@ -23,7 +27,7 @@ public class ExistsCommand implements SpfCommand{
         }catch (SpfDnsException e){
             return  SpfResult.TEMPERROR;
         }
-        if(ipList==null){
+        if(ipList.isEmpty()||ipList==null){
             return SpfResult.NONE;
         }
         else{
