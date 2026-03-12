@@ -15,8 +15,7 @@ public class PtrCommand implements SpfCommand{
 
         String mechanismDomain = mechanism.getDomain();
         if (mechanismDomain == null || mechanismDomain.isEmpty()) {
-            mechanismDomain = spfContext.getDomain();
-        }
+            mechanismDomain = spfContext.getDomain();        }
 
         spfContext.incrementLookups();
         if(spfContext.isMaxlookups()){
